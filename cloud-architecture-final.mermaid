@@ -1,54 +1,51 @@
 graph TB
     %% Mobile App Layer
-    MA[Mobile App<br/>User Interface & SMS Parsing<br/>Live Updates & Notifications]
+    MA["Mobile App<br/>User Interface & SMS Parsing<br/>Live Updates & Notifications"]
     
     %% API Layer
-    API[API Layer<br/>Django REST Framework<br/>Secure Endpoints]
+    API["API Layer<br/>Django REST Framework<br/>Secure Endpoints"]
     
     %% Backend Services
     subgraph Backend["Backend Services"]
-        BE[Django Backend<br/>Core Business Logic]
-        WS[WebSocket Server<br/>Real-time Updates]
-        Cache[(Redis Cache<br/>Performance Layer)]
+        BE["Django Backend<br/>Core Business Logic"]
+        WS["WebSocket Server<br/>Real-time Updates"]
+        Cache[("Redis Cache<br/>Performance Layer")]
     end
     
     %% AWS Cloud Services
     subgraph AWS["AWS Cloud Infrastructure"]
-        EC2[AWS EC2<br/>Hosts Backend Services]
+        EC2["AWS EC2<br/>Hosts Backend Services"]
         
         subgraph MLServices["ML Services"]
-            Lambda[AWS Lambda<br/>ML Models<br/>Transaction Categorization]
+            Lambda["AWS Lambda<br/>ML Models<br/>Transaction Categorization"]
         end
         
         subgraph Storage["Storage & Backup"]
-            RDS[(AWS RDS PostgreSQL<br/>Primary & Replica<br/>Automated Backups)]
+            RDS[("AWS RDS PostgreSQL<br/>Primary & Replica<br/>Automated Backups")]
             
             subgraph S3Storage["S3 Storage"]
-                S3_Static[S3 Static Files<br/>UI Assets]
-                S3_Backup[S3 Backups<br/>DB Snapshots]
-                S3_Logs[S3 Logs<br/>Audit Trail]
+                S3_Static["S3 Static Files<br/>UI Assets"]
+                S3_Backup["S3 Backups<br/>DB Snapshots"]
+                S3_Logs["S3 Logs<br/>Audit Trail"]
             end
         end
         
         subgraph Monitoring["Monitoring & Notifications"]
-            SNS[Amazon SNS<br/>Push Notifications]
-            CW[CloudWatch<br/>System Monitoring<br/>Performance Metrics]
+            SNS["Amazon SNS<br/>Push Notifications"]
+            CW["CloudWatch<br/>System Monitoring<br/>Performance Metrics"]
         end
         
-        %% Database Tables
         subgraph DB["Database Schema"]
-            Users[Users<br/>Auth & Profiles]
-            Trans[Transactions<br/>SMS & Categories]
-            Cat[Categories<br/>Hierarchy]
-            Budg[Budgets<br/>Limits & Tracking]
+            Users["Users<br/>Auth & Profiles"]
+            Trans["Transactions<br/>SMS & Categories"]
+            Cat["Categories<br/>Hierarchy"]
+            Budg["Budgets<br/>Limits & Tracking"]
         end
 
-        %% Disaster Recovery
         subgraph DR["Disaster Recovery"]
-            direction TB
-            Backup[Daily RDS Snapshots]
-            GeoRep[Geographic Replication]
-            Recovery[Recovery Procedures]
+            Backup["Daily RDS Snapshots"]
+            GeoRep["Geographic Replication"]
+            Recovery["Recovery Procedures"]
         end
     end
     
@@ -73,9 +70,9 @@ graph TB
     WS <-.->|"12. WebSocket Connection"| MA
     
     %% Monitoring Connections
-    CW ===|Monitor| EC2
-    CW ===|Monitor| RDS
-    CW ===|Monitor| Lambda
+    CW ===|"Monitor"| EC2
+    CW ===|"Monitor"| RDS
+    CW ===|"Monitor"| Lambda
     
     %% Database Connections
     RDS --- Users
@@ -84,33 +81,18 @@ graph TB
     RDS --- Budg
     
     %% Disaster Recovery Connections
-    RDS -.->|Daily Backup| Backup
-    Backup -.->|Replicate| GeoRep
+    RDS -.->|"Daily Backup"| Backup
+    Backup -.->|"Replicate"| GeoRep
     
     %% Styles
-    classDef aws fill:#ff9900,stroke:#232F3E,stroke-width:2px,color:white;
-    classDef db fill:#3498db,stroke:#2980b9,stroke-width:2px,color:white;
-    classDef app fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white;
-    classDef cache fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:white;
-    classDef dr fill:#95a5a6,stroke:#7f8c8d,stroke-width:2px,color:white;
+    classDef aws fill:#ff9900,stroke:#232F3E,stroke-width:2px,color:white
+    classDef db fill:#3498db,stroke:#2980b9,stroke-width:2px,color:white
+    classDef app fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
+    classDef cache fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:white
+    classDef dr fill:#95a5a6,stroke:#7f8c8d,stroke-width:2px,color:white
     
-    class EC2,Lambda,RDS,S3_Static,S3_Backup,S3_Logs,SNS,CW aws;
-    class Users,Trans,Cat,Budg db;
-    class MA,API,BE,WS app;
-    class Cache cache;
-    class Backup,GeoRep,Recovery dr;
-
-    %% Legend
-    subgraph Legend
-        L1[AWS Services]:::aws
-        L2[Database Components]:::db
-        L3[Application Services]:::app
-        L4[Caching Layer]:::cache
-        L5[Disaster Recovery]:::dr
-    end
-
-    %% Arrow Types
-    %% --> : Data Flow
-    %% -.- : Notifications/Monitoring
-    %% === : System Monitoring
-    %% --- : Database Relations
+    class EC2,Lambda,RDS,S3_Static,S3_Backup,S3_Logs,SNS,CW aws
+    class Users,Trans,Cat,Budg db
+    class MA,API,BE,WS app
+    class Cache cache
+    class Backup,GeoRep,Recovery dr
