@@ -1,14 +1,14 @@
 graph TB
     %% Mobile App Layer
-    MA["Mobile App<br/>(User Interface & SMS Parser)<br/>• SMS Detection<br/>• Transaction Display<br/>• Budget Tracking"]
+    MA[Mobile App<br/>User Interface & SMS Parsing<br/>Live Updates & Notifications]
     
     %% API Layer
-    API[API Layer<br/>Django REST Framework]
+    API[API Layer<br/>Django REST Framework<br/>Secure Endpoints]
     
     %% Backend Services
     subgraph Backend["Backend Services"]
-        BE[Django Backend]
-        WS["WebSocket Server<br/>• Live Updates<br/>• Real-time Notifications"]
+        BE[Django Backend<br/>Core Business Logic]
+        WS[WebSocket Server<br/>Real-time Updates]
         Cache[(Redis Cache<br/>Performance Layer)]
     end
     
@@ -17,21 +17,22 @@ graph TB
         EC2[AWS EC2<br/>Hosts Backend Services]
         
         subgraph MLServices["ML Services"]
-            Lambda[AWS Lambda<br/>ML Models]
+            Lambda[AWS Lambda<br/>ML Models<br/>Transaction Categorization]
         end
         
         subgraph Storage["Storage & Backup"]
-            RDS[("AWS RDS PostgreSQL<br/>Primary DB (Region 1)<br/>Replica DB (Region 2)")]
-            S3["AWS S3<br/>• Static Files<br/>• Database Backups<br/>• Application Logs"]
-        end
-        
-        subgraph DR["Disaster Recovery"]
-            Backup["Automated Backup Strategy<br/>• Daily RDS Snapshots<br/>• Cross-region Replication<br/>• Point-in-time Recovery"]
+            RDS[(AWS RDS PostgreSQL<br/>Primary & Replica<br/>Automated Backups)]
+            
+            subgraph S3Storage["S3 Storage"]
+                S3_Static[S3 Static Files<br/>UI Assets]
+                S3_Backup[S3 Backups<br/>DB Snapshots]
+                S3_Logs[S3 Logs<br/>Audit Trail]
+            end
         end
         
         subgraph Monitoring["Monitoring & Notifications"]
             SNS[Amazon SNS<br/>Push Notifications]
-            CW[CloudWatch<br/>System Monitoring]
+            CW[CloudWatch<br/>System Monitoring<br/>Performance Metrics]
         end
         
         %% Database Tables
@@ -41,68 +42,75 @@ graph TB
             Cat[Categories<br/>Hierarchy]
             Budg[Budgets<br/>Limits & Tracking]
         end
+
+        %% Disaster Recovery
+        subgraph DR["Disaster Recovery"]
+            direction TB
+            Backup[Daily RDS Snapshots]
+            GeoRep[Geographic Replication]
+            Recovery[Recovery Procedures]
+        end
     end
     
-    %% Data Processing Flows (Solid Lines)
+    %% Data Flow Connections
     MA -->|"1. Send SMS Data"| API
     API -->|"2. Process Requests"| BE
-    BE -->|"3. Store"| RDS
-    RDS -->|"4. Retrieve"| BE
+    BE -->|"3. Store Data"| RDS
+    RDS -->|"4. Retrieve Data"| BE
     BE <-->|"5. Cache Data"| Cache
-    BE -->|"6. Prediction Request"| Lambda
-    Lambda -->|"7. Results"| BE
+    BE -->|"6. ML Request"| Lambda
+    Lambda -->|"7. ML Results"| BE
     
-    %% Storage Flows (Dotted Lines)
-    BE -.->|"Store Static Files"| S3
-    BE -.->|"Store Backups"| S3
-    RDS -.->|"Daily Backup"| Backup
+    %% Storage Connections
+    BE -->|"8a. Store Static Files"| S3_Static
+    BE -->|"8b. Store Backups"| S3_Backup
+    BE -->|"8c. Store Logs"| S3_Logs
     
-    %% Real-time Updates (Thick Lines)
-    BE ==>|"Trigger Notifications"| SNS
-    SNS ==>|"Push to Device"| MA
-    BE ==>|"Real-time Updates"| WS
-    WS ==>|"Live WebSocket Feed"| MA
+    %% Real-time Connections
+    BE -->|"9. Trigger"| SNS
+    SNS -.->|"10. Push Notification"| MA
+    BE -->|"11. Live Update"| WS
+    WS <-.->|"12. WebSocket Connection"| MA
     
-    %% Monitoring Flows (Dashed Lines)
-    CW -.->|"Monitor"| EC2
-    CW -.->|"Monitor"| RDS
-    CW -.->|"Monitor"| Lambda
+    %% Monitoring Connections
+    CW ===|Monitor| EC2
+    CW ===|Monitor| RDS
+    CW ===|Monitor| Lambda
     
     %% Database Connections
     RDS --- Users
     RDS --- Trans
     RDS --- Cat
     RDS --- Budg
-
+    
+    %% Disaster Recovery Connections
+    RDS -.->|Daily Backup| Backup
+    Backup -.->|Replicate| GeoRep
+    
     %% Styles
     classDef aws fill:#ff9900,stroke:#232F3E,stroke-width:2px,color:white;
     classDef db fill:#3498db,stroke:#2980b9,stroke-width:2px,color:white;
     classDef app fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white;
     classDef cache fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:white;
-    classDef dr fill:#9b59b6,stroke:#8e44ad,stroke-width:2px,color:white;
+    classDef dr fill:#95a5a6,stroke:#7f8c8d,stroke-width:2px,color:white;
     
-    class EC2,Lambda,RDS,S3,SNS,CW aws;
+    class EC2,Lambda,RDS,S3_Static,S3_Backup,S3_Logs,SNS,CW aws;
     class Users,Trans,Cat,Budg db;
     class MA,API,BE,WS app;
     class Cache cache;
-    class Backup,DR dr;
+    class Backup,GeoRep,Recovery dr;
 
     %% Legend
-    subgraph Legend["Legend"]
-        L1[AWS Services]
-        L2[Database Components]
-        L3[Application Services]
-        L4[Caching Layer]
-        L5[Disaster Recovery]
-        
-        %% Arrow Types
-        L6[" "] -->|"Data Flow"| L7[" "]
-        L8[" "] ==>|"Real-time Updates"| L9[" "]
-        L10[" "] -.->|"Monitoring/Backup"| L11[" "]
+    subgraph Legend
+        L1[AWS Services]:::aws
+        L2[Database Components]:::db
+        L3[Application Services]:::app
+        L4[Caching Layer]:::cache
+        L5[Disaster Recovery]:::dr
     end
-    
-    class L1 aws;
-    class L2 db;
-    class L3 app;
-    class L4 cache;
-    class L5 dr;
+
+    %% Arrow Types
+    %% --> : Data Flow
+    %% -.- : Notifications/Monitoring
+    %% === : System Monitoring
+    %% --- : Database Relations
